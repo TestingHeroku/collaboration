@@ -19,13 +19,13 @@ angular.module('fabricApp.controllers', [])
         $location.path('/');
         return;
     }
-    else
+    else {
         socketFactory.emit('setUser', commonData.Name);
+    }
 
     homeCtrl.getEditorBubble = function(username) {
         return $('div[data-user-id="'+username+'"]');
     };
-    
     
     /**
      * Get FabricJs Object by Id
@@ -55,7 +55,7 @@ angular.module('fabricApp.controllers', [])
      * @TODO: Replace static optimal width with constant
      */
     homeCtrl.resizeCanvas = function (){ 
-        
+
         var minWidth = 480;
         var containerWidth = $(homeCtrl.container).width() > minWidth ? $(homeCtrl.container).width() : minWidth;
         var scaleFactor = containerWidth / 847;
@@ -67,7 +67,6 @@ angular.module('fabricApp.controllers', [])
         $scope.canvas.setZoom(scaleFactor);
         $scope.canvas.calcOffset();
         $scope.canvas.renderAll();
-
     }
     
     /**
@@ -89,50 +88,7 @@ angular.module('fabricApp.controllers', [])
         homeCtrl.resizeCanvas();
 
         //init objList
-        $scope.objList = [
-            /*
-            new fabric.Rect({
-                left: 100,
-                top: 120,
-                fill: '#2ecc71',
-                width: 100,
-                height: 100,
-                originX: 'center',
-                originY: 'center',
-                id: 0
-            }),
-
-            new fabric.Circle({
-                left: 220,
-                top: 120,
-                fill: '#e74c3c',
-                radius: 50,
-                originX: 'center',
-                originY: 'center',
-                id: 1
-            }),
-            
-            new fabric.Triangle({
-                left: 340,
-                top: 120,
-                fill: '#9b59b6',
-                width: 100,
-                height: 100,
-                originX: 'center',
-                originY: 'center',
-                id: 2
-            }),
-            new fabric.Text('Everything Responsive', {
-                left: 300, 
-                top: 300,
-                fill: '#f39c12',
-                fontFamily: 'Oxygen',
-                originX: 'center',
-                originY: 'center',
-                id: 3
-            })
-            */
-        ];
+        $scope.objList = [];
         
         //add all objects to the canvas
         $scope.objList.forEach(function(obj) {
@@ -166,6 +122,7 @@ angular.module('fabricApp.controllers', [])
         socketFactory.on('object:modifying', this.onObjectModifying);
         socketFactory.on('object:stoppedModifying', this.onObjectStoppedModifying);
         socketFactory.on('addRectangle', this.onAddRectangle);
+        socketFactory.on('addCircle', this.onAddCircle);
 
         socketFactory.on('users', this.setUsers);
     };
@@ -184,13 +141,26 @@ angular.module('fabricApp.controllers', [])
 
         homeCtrl.addRectangle = $('#addRectangle');
         homeCtrl.addRectangle.on('mousedown', function(event) {
+            event.preventDefault();
             homeCtrl.lockDrag = true;
             homeCtrl.dragObject = $('<div class="addRectangle"></div>');
             homeCtrl.dragObject.css('position', 'fixed');
             homeCtrl.dragObject.css('top', event.clientY);
             homeCtrl.dragObject.css('left', event.clientX);
+            homeCtrl.dragObject.name = "rectangle";
             $('body').append(homeCtrl.dragObject);
+        });
+
+        homeCtrl.addCircle = $('#addCircle');
+        homeCtrl.addCircle.on('mousedown', function(event) {
             event.preventDefault();
+            homeCtrl.lockDrag = true;
+            homeCtrl.dragObject = $('<div class="addCircle"></div>');
+            homeCtrl.dragObject.css('position', 'fixed');
+            homeCtrl.dragObject.css('top', event.clientY);
+            homeCtrl.dragObject.css('left', event.clientX);
+            homeCtrl.dragObject.name = "circle";
+            $('body').append(homeCtrl.dragObject);
         });
 
     };
@@ -199,7 +169,7 @@ angular.module('fabricApp.controllers', [])
         homeCtrl.lockDrag = false;
         if (typeof homeCtrl.dragObject !== 'undefined') {
             homeCtrl.dragObject.remove();
-            homeCtrl.addNewRectangle(event);
+            homeCtrl.addNewShape(event, homeCtrl.dragObject.name);
             homeCtrl.dragObject = undefined;
         }
     };
@@ -213,7 +183,7 @@ angular.module('fabricApp.controllers', [])
         }
     };
 
-    homeCtrl.addNewRectangle = function(event) {
+    homeCtrl.addNewShape = function(event, shape) {
 
         var left, top, id;
 
@@ -224,24 +194,47 @@ angular.module('fabricApp.controllers', [])
         console.log(left);
         console.log(top);
 
-        var rectangle = new fabric.Rect({
-            left: left,
-            top: +top,
-            fill: '#FF0000',
-            width: 50,
-            height: 50,
-            originX: 'center',
-            originY: 'center',
-            id: id
-        });
+        if (shape == "rectangle")
+        {
+            var rectangle = new fabric.Rect({
+                left: left,
+                top: +top,
+                fill: '#FF0000',
+                width: 50,
+                height: 50,
+                originX: 'center',
+                originY: 'center',
+                id: id
+            });
 
-        socketFactory.emit('addRectangle', {
-            left: left,
-            top: +top,
-            id: id
-        });
-        $scope.objList.push(rectangle);
-        $scope.canvas.add(rectangle);
+            socketFactory.emit('addRectangle', {
+                left: left,
+                top: +top,
+                id: id
+            });
+            $scope.objList.push(rectangle);
+            $scope.canvas.add(rectangle);
+        }
+        else if (shape == "circle")
+        {
+            var circle = new fabric.Circle({
+                left: left,
+                top: +top,
+                fill: '#FF0000',
+                radius: 20,
+                originX: 'center',
+                originY: 'center',
+                id: id
+            });
+
+            socketFactory.emit('addCircle', {
+                left: left,
+                top: +top,
+                id: id
+            });
+            $scope.objList.push(circle);
+            $scope.canvas.add(circle);
+        }
         $scope.canvas.renderAll();
     };
 
@@ -262,6 +255,23 @@ angular.module('fabricApp.controllers', [])
         $scope.canvas.add(rectangle);
         $scope.canvas.renderAll();
     };
+
+    homeCtrl.onAddCircle = function(data) {
+
+        var circle = new fabric.Circle({
+            left: data.left,
+            top: data.top,
+            fill: '#FF0000',
+            radius: 20,
+            originX: 'center',
+            originY: 'center',
+            id: data.id
+        });
+
+        $scope.objList.push(circle);
+        $scope.canvas.add(circle);
+        $scope.canvas.renderAll();
+    };
     
     /**
      * Tell all clients we stopped modifying
@@ -280,7 +290,7 @@ angular.module('fabricApp.controllers', [])
             homeCtrl.lockDrag = false;
             if (typeof homeCtrl.dragObject !== 'undefined') {
                 homeCtrl.dragObject.remove();
-                homeCtrl.addNewRectangle(event);
+                homeCtrl.addNewShape(event, homeCtrl.dragObject.name);
                 homeCtrl.dragObject = undefined;
             }
         }
@@ -428,9 +438,7 @@ angular.module('fabricApp.controllers', [])
         $location.path('/fabric');
     
     $scope.submitName = function() {
-        
         commonData.Name = $scope.user.name;
         $location.path('/fabric');
-        
     };
 });

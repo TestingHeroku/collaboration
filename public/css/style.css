@@ -18,13 +18,13 @@ body {
 #mainView {
     background-color: #FFF;
     height: 100%;
-    padding-top: 50px;
-    padding-bottom: 50px;
+    padding-top: 0px;
+    padding-bottom: 0px;
 }
 
 #mainView .container {
-    margin-top: 50px;
-    margin-bottom: 50px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .btn-primary {
@@ -32,7 +32,6 @@ body {
     border: none;
     box-shadow: none;
 }
-
 
 .splash {
     height: 350px;
@@ -92,7 +91,7 @@ body {
     border: none;
     box-shadow: none;
     background-image: none;
-    background-color: #34495e;
+    background-color: #3790e9;
 }
 
 .navbar-default .navbar-brand {
@@ -424,7 +423,8 @@ footer.main-footer a.social > i {
     margin: 20px;
 }
 
-#addCircle {
+#addCircle, .addCircle {
+    cursor: all-scroll;
     padding: 20px;
     background: #FF0000;
     height: 50px;

@@ -64,6 +64,13 @@ module.exports = function (io) {
 
         });
 
+        socket.on('addCircle', function (value) {
+
+            //send object:stoppedModifying to everyone except the sender
+            socket.broadcast.emit('addCircle', value);
+
+        });
+
         socket.on('setUser', function (value) {
             
             var user = getUserById(socket.id);
