@@ -7,13 +7,11 @@ module.exports = function (io) {
     var users = [];
 
     var getUserById = function (id) {
-
         for (var i = 0; i < users.length; i++) {
             if (users[i].id === id)
                 return users[i];
         }
         return undefined;
-
     };
     
     var getUserIndexById = function(id) {
@@ -23,7 +21,6 @@ module.exports = function (io) {
         }
         return -1;
     };
-
 
     io.sockets.on('connection', function (socket) {
         
@@ -42,43 +39,24 @@ module.exports = function (io) {
             socket.broadcast.emit('users', users);
         });
 
-
         socket.on('object:modifying', function (value) {
-            
-            //send object:modifying to everyone except the sender
             socket.broadcast.emit('object:modifying', value);
-
         });
         
         socket.on('object:stoppedModifying', function (value) {
-
-            //send object:stoppedModifying to everyone except the sender
             socket.broadcast.emit('object:stoppedModifying', value);
-
         });
 
-        socket.on('addRectangle', function (value) {
-
-            //send object:stoppedModifying to everyone except the sender
-            socket.broadcast.emit('addRectangle', value);
-
-        });
-
-        socket.on('addCircle', function (value) {
-
-            //send object:stoppedModifying to everyone except the sender
-            socket.broadcast.emit('addCircle', value);
-
+        socket.on('addShape', function (value) {
+            socket.broadcast.emit('addShape', value);
         });
 
         socket.on('setUser', function (value) {
-            
             var user = getUserById(socket.id);
             if (typeof user !== 'undefined')
                 user.name = value;
             
             io.sockets.emit('users', users);
-
         });
     });
 };

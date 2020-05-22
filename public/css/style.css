@@ -414,21 +414,45 @@ footer.main-footer a.social > i {
 
 
 
-#addRectangle, .addRectangle {
+#smRectangle, #mdRectangle, #lgRectangle, .smRectangle, .mdRectangle, .lgRectangle {
     cursor: all-scroll;
-    padding: 20px;
-    background: #FF0000;
-    height: 50px;
-    width: 50px;
-    margin: 20px;
+    background: #0000FF;
+    margin: 5px;
 }
 
-#addCircle, .addCircle {
-    cursor: all-scroll;
-    padding: 20px;
-    background: #FF0000;
+#smRectangle, .smRectangle {
+    height: 30px;
+    width: 30px;
+}
+
+#mdRectangle, .mdRectangle {
+    height: 40px;
+    width: 40px;
+}
+
+#lgRectangle, .lgRectangle {
     height: 50px;
     width: 50px;
-    margin: 20px;
+}
+
+#smCircle, #mdCircle, #lgCircle, .smCircle, .mdCircle, .lgCircle {
+    cursor: all-scroll;
+    background: #FF0000;
     border-radius: 50%;
+    margin: 5px;
+}
+
+#smCircle, .smCircle {
+    height: 30px;
+    width: 30px;
+}
+
+#mdCircle, .mdCircle {
+    height: 40px;
+    width: 40px;
+}
+
+#lgCircle, .lgCircle {
+    height: 50px;
+    width: 50px;
 }
