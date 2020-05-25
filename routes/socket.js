@@ -58,5 +58,17 @@ module.exports = function (io) {
             
             io.sockets.emit('users', users);
         });
+
+        socket.on('objectPathRemoved', function() {
+            socket.broadcast.emit('objectPathRemoved');
+        });
+        
+        socket.on('objectGroupRemoved', function(value) {
+            socket.broadcast.emit('objectGroupRemoved', value);
+        });
+        
+        socket.on('objectPathAdded', function(value) {
+            socket.broadcast.emit('objectPathAdded', value);
+        });
     });
 };

@@ -37,12 +37,35 @@ angular.module('fabricApp.controllers', [])
     };
 
     homeCtrl.getHighestId = function() {
+        var ids = [];
+
+        // Get all object´s id, sort them, then search for a missing one
+        $scope.objList.forEach(obj => {
+            ids.push(obj.id);
+        });
+        ids = ids.sort((a, b) => a - b);
+        var i = 1;
+        for(var id of ids) {
+            if (id != i) {
+                return i - 1;
+            }
+            i++;
+        };
+
+        // if doesn't find a missing then search for highest one
         var highestId = 0;
-        for(var i = 0; i < $scope.objList.length; i++) {
-            if ($scope.objList[i].id > highestId)
-                highestId = $scope.objList[i].id;
-        }
+        $scope.objList.forEach(obj => {
+            highestId = obj.id > highestId ? obj.id : highestId;
+        });
+
         return highestId;
+    };
+
+    homeCtrl.removeItem = function(value) { 
+        var index = $scope.objList.indexOf(value);
+        if (index > -1) {
+            $scope.objList.splice(index, 1);
+        }
     };
     
     /**
@@ -70,27 +93,48 @@ angular.module('fabricApp.controllers', [])
      * @TODO: Load FabricJs objects from Server
      */
     homeCtrl.init = function() {
-        // create a wrapper around native canvas element (with id="fabricjs")
+        // Create a wrapper around native canvas element (with id="fabricjs")
         $scope.canvas = new fabric.Canvas('fabricjs');
+        $scope.canvas.backgroundColor = '#FFFFE6';
+        $scope.canvas.isDrawingMode = false;
+        $scope.canvas.hoverCursor = 'arrow';
         $scope.canvas.selection = false;
+        $scope.canvas.freeDrawingBrush.color = '#0000FF';
+        $scope.canvas.freeDrawingBrush.width = 2;
         homeCtrl.container = $('#canvas-container');
 
-        //Register resize event
+        $('#drawing-mode').on('click', function() {
+            $scope.canvas.isDrawingMode = !$scope.canvas.isDrawingMode;
+            if ($scope.canvas.isDrawingMode) {
+                $('#drawing-mode i').removeClass().addClass('fa fa-arrows')
+            } else {
+                $('#drawing-mode i').removeClass().addClass('fa fa-pencil')
+                homeCtrl.deletePaths();
+            }
+        });
+
+        $('#drawing-color').on('change', function() {
+            $scope.canvas.freeDrawingBrush.color = this.value;
+        });
+
+        // Register resize event
         $(window).resize( homeCtrl.resizeCanvas );
+        
+        // Register keyboard events
         $(window).keydown( function(event) {
-            if(event.keyCode == 8 || event.keyCode == 46) {
+            if (event.keyCode == 8 || event.keyCode == 46) {
                 event.preventDefault();
                 homeCtrl.deleteObj();
             }
         });
 
-        //Resize canvas on first load
+        // Resize canvas on first load
         homeCtrl.resizeCanvas();
 
-        //init objList
+        // Init objList
         $scope.objList = [];
         
-        //add areas to the canvas
+        // Add areas to the canvas
         var pointsLateralArea = [
             {x:0, y:0},
             {x:$scope.canvas.width * 0.05, y:0},
@@ -101,7 +145,7 @@ angular.module('fabricApp.controllers', [])
             stroke: 'gray',
             strokeWidth: 1,
             strokeDashArray: [1,3],
-            fill: 'transparent',
+            fill: '#000',
             selectable: false
         });
         $scope.canvas.add(lateralArea);
@@ -123,18 +167,23 @@ angular.module('fabricApp.controllers', [])
 
         homeCtrl.initDrag();
 
-        //register canvas events
+        // Register canvas events
         $scope.canvas.on('object:moving', homeCtrl.emitObjectModifying);
         $scope.canvas.on('object:scaling', homeCtrl.emitObjectModifying);
         $scope.canvas.on('object:rotating', homeCtrl.emitObjectModifying);
+        $scope.canvas.on('object:removed', homeCtrl.emitObjectRemoved);
+        $scope.canvas.on('path:created', homeCtrl.emitObjectAdded);
         $scope.canvas.on('mouse:up', homeCtrl.emitObjectStoppedModifying);
         $scope.canvas.on('mouse:up', homeCtrl.dragMouseUp);
 
-        //register socket events
+        // Register socket events
         socketFactory.on('object:modifying', homeCtrl.onObjectModifying);
         socketFactory.on('object:stoppedModifying', homeCtrl.onObjectStoppedModifying);
         socketFactory.on('addShape', homeCtrl.onAddShape);
         socketFactory.on('users', homeCtrl.setUsers);
+        socketFactory.on('objectPathRemoved', homeCtrl.onObjectPathRemoved);
+        socketFactory.on('objectGroupRemoved', homeCtrl.onObjectGroupRemoved);
+        socketFactory.on('objectPathAdded', homeCtrl.onObjectPathAdded);
     };
 
     homeCtrl.setUsers = function(value) {
@@ -289,21 +338,6 @@ angular.module('fabricApp.controllers', [])
 
     homeCtrl.onAddShape = function(data) {
         homeCtrl.createShape(data.left, data.top, data.id, data.shape);
-
-        /*var rectangle = new fabric.Rect({
-            left: data.left,
-            top: data.top,
-            fill: '#FF0000',
-            width: 50,
-            height: 50,
-            originX: 'center',
-            originY: 'center',
-            id: data.id
-        });
-
-        $scope.objList.push(rectangle);
-        $scope.canvas.add(rectangle);
-        $scope.canvas.renderAll();*/
     };
 
     homeCtrl.deleteObj = function() {
@@ -313,13 +347,79 @@ angular.module('fabricApp.controllers', [])
             if (activeObject.type === 'activeSelection') {
                 activeObject.canvas = $scope.canvas;
                 activeObject.forEachObject(function(obj) {
+                    homeCtrl.removeItem(obj);
                     $scope.canvas.remove(obj);
                 });
             } else {
+                homeCtrl.removeItem(activeObject);
                 $scope.canvas.remove(activeObject);
             }
         }
-    }
+    };
+
+    homeCtrl.deletePaths = function() {
+        var objects = $scope.canvas.getObjects();
+        for (var i = 0; i < objects.length; i++) {
+            if (objects[i].type == 'path') {
+                $scope.canvas.remove(objects[i]);
+            }
+        }
+    };
+
+    /**
+     * Tell all clients we deleted an object
+     */
+    homeCtrl.emitObjectRemoved = function(event) {
+        if (event.target.type == 'path') {
+            socketFactory.emit('objectPathRemoved');
+        } else {
+            socketFactory.emit('objectGroupRemoved', {
+                id: event.target.id
+            });
+        }
+    };
+
+    /**
+     * Object path was deleted by another client
+     */
+    homeCtrl.onObjectPathRemoved = function() {
+        homeCtrl.deletePaths();
+    };
+
+    /**
+     * Object group (circle / rectangle) was deleted by another client
+     */
+    homeCtrl.onObjectGroupRemoved = function(value) {
+        var object = homeCtrl.getObjectById(value.id);
+        homeCtrl.removeItem(object);
+        $scope.canvas.remove(object);
+    };
+
+    /**
+     * Tell all clients we added an object
+     */
+    homeCtrl.emitObjectAdded = function(value) {
+        socketFactory.emit('objectPathAdded', {
+            path: value.path
+        });
+    };
+
+    /**
+     * Object path was added by another client
+     */
+    homeCtrl.onObjectPathAdded = function(value) {
+        var path = new fabric.Path(value.path.path, {
+            stroke: value.path.stroke,
+            strokeWidth: value.path.strokeWidth,
+            fill: value.path.fill,
+            originX: value.path.originX,
+            originY: value.path.originY,
+            left: value.path.left,
+            top: value.path.top
+        });
+        $scope.canvas.add(path);
+        $scope.canvas.renderAll();
+    };
     
     /**
      * Tell all clients we stopped modifying
@@ -423,7 +523,6 @@ angular.module('fabricApp.controllers', [])
             editorBubble.fadeIn(400);
         
         if (typeof obj !== 'undefined') {
-            
             obj.animate({
                 left: value.left,
                 top: value.top,
@@ -444,20 +543,16 @@ angular.module('fabricApp.controllers', [])
                     editorBubble.css('left', $('#fabricjs').offset().left+objectLeft-editorBubble.outerWidth() / 2);
                     editorBubble.css('top', $('#fabricjs').offset().top+objectTop-objectHeight-editorBubble.outerHeight());
                 },
-                onComplete: function () {
-                    
+                onComplete: function () {     
                 }
             });
-
         }
-
     };
     
     /**
      * Gets called after mouse is released on other client
      */
     homeCtrl.onObjectStoppedModifying = function(value) {
-        
         homeCtrl.isModifying = false;
         
         if (typeof homeCtrl.currentMoveTimeout !== 'undefined') {
@@ -470,11 +565,9 @@ angular.module('fabricApp.controllers', [])
                 $(this).remove();
             });
         }
-
     };
 
     homeCtrl.init();
-
 })
 
 /**
