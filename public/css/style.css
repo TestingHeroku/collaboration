@@ -456,3 +456,12 @@ footer.main-footer a.social > i {
     height: 50px;
     width: 50px;
 }
+
+#drawing-mode, #drawing-color, #drawing-stroke {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+#drawing-stroke {
+    width: 60px;
+}

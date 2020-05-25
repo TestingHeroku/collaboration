@@ -73,16 +73,13 @@ angular.module('fabricApp.controllers', [])
      *
      * @TODO: Replace static optimal width with constant
      */
-    homeCtrl.resizeCanvas = function (){ 
-        var minWidth = 480;
-        var containerWidth = $(homeCtrl.container).width() > minWidth ? $(homeCtrl.container).width() : minWidth;
-        var scaleFactor = containerWidth / 847;
-
+    homeCtrl.resizeCanvas = function (){
         $scope.canvas.setDimensions({
-            width: containerWidth
+            width: $(homeCtrl.container).width(),
+            height: $(window).innerHeight() - 80
         });
 
-        $scope.canvas.setZoom(scaleFactor);
+        $scope.canvas.setZoom(1);
         $scope.canvas.calcOffset();
         $scope.canvas.renderAll();
     }
@@ -95,7 +92,7 @@ angular.module('fabricApp.controllers', [])
     homeCtrl.init = function() {
         // Create a wrapper around native canvas element (with id="fabricjs")
         $scope.canvas = new fabric.Canvas('fabricjs');
-        $scope.canvas.backgroundColor = '#FFFFE6';
+        $scope.canvas.backgroundColor = '#C0C0C0';
         $scope.canvas.isDrawingMode = false;
         $scope.canvas.hoverCursor = 'arrow';
         $scope.canvas.selection = false;
@@ -111,6 +108,10 @@ angular.module('fabricApp.controllers', [])
                 $('#drawing-mode i').removeClass().addClass('fa fa-pencil')
                 homeCtrl.deletePaths();
             }
+        });
+
+        $('#drawing-stroke').on('change', function() {
+            $scope.canvas.freeDrawingBrush.width = this.value;
         });
 
         $('#drawing-color').on('change', function() {
@@ -137,8 +138,8 @@ angular.module('fabricApp.controllers', [])
         // Add areas to the canvas
         var pointsLateralArea = [
             {x:0, y:0},
-            {x:$scope.canvas.width * 0.05, y:0},
-            {x:$scope.canvas.width * 0.05, y:$scope.canvas.height},
+            {x:$scope.canvas.width * 0.1, y:0},
+            {x:$scope.canvas.width * 0.1, y:$scope.canvas.height},
             {x:0, y:$scope.canvas.height}
         ];
         var lateralArea = new fabric.Polygon(pointsLateralArea, { 
@@ -151,15 +152,15 @@ angular.module('fabricApp.controllers', [])
         $scope.canvas.add(lateralArea);
 
         var pointsCentralArea = [
-            {x:$scope.canvas.width * 0.15, y:$scope.canvas.height * 0.15},
-            {x:$scope.canvas.width * 0.65, y:$scope.canvas.height * 0.15},
-            {x:$scope.canvas.width * 0.65, y:$scope.canvas.height * 0.65},
-            {x:$scope.canvas.width * 0.15, y:$scope.canvas.height * 0.65}
+            {x:$scope.canvas.width * 0.28, y:$scope.canvas.height * 0.28},
+            {x:$scope.canvas.width * 0.82, y:$scope.canvas.height * 0.28},
+            {x:$scope.canvas.width * 0.82, y:$scope.canvas.height * 0.82},
+            {x:$scope.canvas.width * 0.28, y:$scope.canvas.height * 0.82}
         ];
         var centralArea = new fabric.Polygon(pointsCentralArea, { 
             stroke: 'gray',
             strokeWidth: 1,
-            strokeDashArray: [1,3],
+            strokeDashArray: [1,1],
             fill: 'transparent',
             selectable: false
         });
