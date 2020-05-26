@@ -1,13 +1,14 @@
 <div class="container" ng-cloak>
     <div class="row">
-        <div class="col-sm-4 col-sm-offset-3">
+        <div class="col-md-5"></div>
+        <div id="meeting-id" class="col-md-2 text-center">
             <form ng-submit="submitName();">
                 <div class="form-group">
-                    <!--<label for="name">Name</label>-->
                     <input type="text" class="form-control" id="name" ng-model="user.name" placeholder="Tú Nombre">
                 </div>
                 <button type="submit" ng-disabled="!user.name" class="btn btn-primary btn-lg">Iniciar</button>
             </form>
         </div>
+        <div class="col-md-5"></div>
     </div>
 </div>

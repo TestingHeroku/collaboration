@@ -2,7 +2,7 @@ body {
     font-family: 'Raleway', sans-serif;
     -webkit-font-smoothing: subpixel-antialiased;
     color: #666;
-    background-color: #f4f4f4;
+    background-color: #FFF;
 }
 
 /* ng-cloak */
@@ -16,7 +16,7 @@ body {
 }
 
 #mainView {
-    background-color: #FFF;
+    background-color: #EEE;
     height: 100%;
     padding-top: 0px;
     padding-bottom: 0px;
@@ -412,7 +412,10 @@ footer.main-footer a.social > i {
     }
 }
 
-
+#meeting-id {
+    height: 350px;
+    margin-top: 100px;
+}
 
 #smRectangle, #mdRectangle, #lgRectangle, .smRectangle, .mdRectangle, .lgRectangle {
     cursor: all-scroll;
