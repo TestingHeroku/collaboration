@@ -460,9 +460,13 @@ footer.main-footer a.social > i {
     width: 50px;
 }
 
-#drawing-mode, #drawing-color, #drawing-stroke {
+#create-triangle, #create-line, #delete-triangle-line, #drawing-mode, #drawing-color, #drawing-stroke {
     margin-top: 15px;
     margin-bottom: 15px;
+}
+
+#drawing-color {
+    width: 60px;
 }
 
 #drawing-stroke {

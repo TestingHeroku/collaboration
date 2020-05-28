@@ -1,12 +1,15 @@
 <div class="container-fluid" ng-cloak>
     <div class="row">
-        <div class="col-md-2">
+        <!--
+        <div class="col-md-1">
             <div ng-repeat="user in users">
                 <h6>\{{user.name}}</h6>
             </div>
         </div>
-        <div class="col-md-10">
+        -->
+        <div class="col-md-12">
             <div class="row">
+                <div class="col-md-1"></div>
                 <div class="col-md-1">
                     <div id="smRectangle"></div>
                 </div>
@@ -25,15 +28,29 @@
                 <div class="col-md-1">
                     <div id="lgCircle"></div>
                 </div>
-                <div class="col-md-3"></div>
-                <div class="col-md-1">
-                    <button id="drawing-mode" class="btn btn-info"><i class="fa fa-pencil"></i></button>
-                </div>
-                <div class="col-md-1">
-                    <input id="drawing-stroke" class="form-control" type="number" value="2" min="1" max="20"></input>
-                </div>
-                <div class="col-md-1">
-                    <input id="drawing-color" class="form-control" type="color" value="#0000FF"></input>
+                <div class="col-md-5">
+                    <div id="admin-tools" class="row">
+                        <div class="col-md-5"></div>
+                        <div class="col-md-1">
+                            <button id="create-triangle" class="btn btn-info"><i class="fa fa-caret-up"></i></button>
+                        </div>
+                        <div class="col-md-1">
+                            <button id="create-line" class="btn btn-info"><i class="fa fa-window-minimize"></i></button>
+                        </div>
+                        <div class="col-md-1">
+                            <button id="delete-triangle-line" class="btn btn-info"><i class="fa fa-trash-o"></i></button>
+                        </div>
+                        <div class="col-md-1">
+                            <button id="drawing-mode" class="btn btn-info"><i class="fa fa-pencil"></i></button>
+                        </div>
+                        <div class="col-md-1">
+                            <input id="drawing-stroke" class="form-control" type="number" value="2" min="1" max="20"></input>
+                        </div>
+                        <div class="col-md-1">
+                            <input id="drawing-color" class="form-control" type="color" value="#0000FF"></input>
+                        </div>
+                        <div class="col-md-1"></div>
+                    </div>
                 </div>
             </div>
         </div>

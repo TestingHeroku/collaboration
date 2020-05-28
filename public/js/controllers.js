@@ -39,9 +39,12 @@ angular.module('fabricApp.controllers', [])
     homeCtrl.getHighestId = function() {
         var ids = [];
 
-        // Get all object´s id, sort them, then search for a missing one
+        // Get all object´s id (less than 100 because they are marks), 
+        // sort them, then search for a missing one
         $scope.objList.forEach(obj => {
-            ids.push(obj.id);
+            if (obj.id < 100) {
+                ids.push(obj.id);
+            }
         });
         ids = ids.sort((a, b) => a - b);
         var i = 1;
@@ -54,6 +57,15 @@ angular.module('fabricApp.controllers', [])
 
         // if doesn't find a missing then search for highest one
         var highestId = 0;
+        $scope.objList.forEach(obj => {
+            highestId = obj.id < 100 && obj.id > highestId ? obj.id : highestId;
+        });
+
+        return highestId;
+    };
+
+    homeCtrl.getMarkId = function() {
+        var highestId = 100;
         $scope.objList.forEach(obj => {
             highestId = obj.id > highestId ? obj.id : highestId;
         });
@@ -100,6 +112,10 @@ angular.module('fabricApp.controllers', [])
         $scope.canvas.freeDrawingBrush.width = 2;
         homeCtrl.container = $('#canvas-container');
 
+        // TODO: Change this condition
+        if (commonData.Name != 'administrador')
+            $('#admin-tools').hide();
+
         $('#drawing-mode').on('click', function() {
             $scope.canvas.isDrawingMode = !$scope.canvas.isDrawingMode;
             if ($scope.canvas.isDrawingMode) {
@@ -116,6 +132,18 @@ angular.module('fabricApp.controllers', [])
 
         $('#drawing-color').on('change', function() {
             $scope.canvas.freeDrawingBrush.color = this.value;
+        });
+
+        $('#create-triangle').on('click', function() {
+            homeCtrl.addNewMark('triangle');
+        });
+
+        $('#create-line').on('click', function() {
+            homeCtrl.addNewMark('line');
+        });
+
+        $('#delete-triangle-line').on('click', function() {
+            homeCtrl.deleteMarks();
         });
 
         // Register resize event
@@ -181,6 +209,7 @@ angular.module('fabricApp.controllers', [])
         socketFactory.on('object:modifying', homeCtrl.onObjectModifying);
         socketFactory.on('object:stoppedModifying', homeCtrl.onObjectStoppedModifying);
         socketFactory.on('addShape', homeCtrl.onAddShape);
+        socketFactory.on('addMark', homeCtrl.onAddMark);
         socketFactory.on('users', homeCtrl.setUsers);
         socketFactory.on('objectPathRemoved', homeCtrl.onObjectPathRemoved);
         socketFactory.on('objectGroupRemoved', homeCtrl.onObjectGroupRemoved);
@@ -299,8 +328,7 @@ angular.module('fabricApp.controllers', [])
         $scope.canvas.renderAll();
     };
 
-    homeCtrl.getShape = function(left, top, id, stringId, stringPath, backColor, sizeFont){
-
+    homeCtrl.getShape = function(left, top, id, stringId, stringPath, backColor, sizeFont) {
         var path = new fabric.Path(stringPath);
         path.set({
             fill: backColor,
@@ -341,6 +369,54 @@ angular.module('fabricApp.controllers', [])
         homeCtrl.createShape(data.left, data.top, data.id, data.shape);
     };
 
+    homeCtrl.addNewMark = function(shape) {
+        var left, top, id;
+        
+        left = $scope.canvas.width * 0.5;
+        top = $scope.canvas.height * 0.5 ;
+        id = homeCtrl.getMarkId() + 1;
+        homeCtrl.createMark(left, top, id, shape);
+
+        socketFactory.emit('addMark', {
+            left: left,
+            top: +top,
+            id: id,
+            shape: shape
+        });
+    };
+
+    homeCtrl.createMark = function(left, top, id, shape) {
+        switch(shape) {
+            case 'triangle':
+                var mark = new fabric.Triangle({
+                    left: left,
+                    top: top,
+                    fill: 'transparent',
+                    stroke: 1,
+                    originX: 'center',
+                    originY: 'center',
+                    id: id
+                });
+                break;
+            case 'line':
+                var mark = new fabric.Line([0, 0, 50, 50], {
+                    left: left,
+                    top: top,
+                    stroke: 'black',
+                    id: id
+                });
+                break;
+        }
+        
+        $scope.objList.push(mark);
+        $scope.canvas.add(mark);
+        $scope.canvas.renderAll();
+    };
+
+    homeCtrl.onAddMark = function(data) {
+        homeCtrl.createMark(data.left, data.top, data.id, data.shape);
+    };
+
     homeCtrl.deleteObj = function() {
         var activeObject = $scope.canvas.getActiveObject();
         if (activeObject !== undefined && activeObject !== null)
@@ -362,6 +438,15 @@ angular.module('fabricApp.controllers', [])
         var objects = $scope.canvas.getObjects();
         for (var i = 0; i < objects.length; i++) {
             if (objects[i].type == 'path') {
+                $scope.canvas.remove(objects[i]);
+            }
+        }
+    };
+
+    homeCtrl.deleteMarks = function() {
+        var objects = $scope.canvas.getObjects();
+        for (var i = 0; i < objects.length; i++) {
+            if (objects[i].id > 100) {
                 $scope.canvas.remove(objects[i]);
             }
         }
@@ -574,8 +659,27 @@ angular.module('fabricApp.controllers', [])
 /**
  * Basic Profile Controller
  */
-.controller('ProfileCtrl', function($scope, $location, commonData, socketFactory) {
+.controller('ProfileCtrl', function($scope, $location, $http, commonData) {
+
+    /*
+    var data = {
+        name: 'Pepe',
+        age: 10,      
+        adress: 'Apotz'
+    };
     
+    // https://www.tutlane.com/tutorial/angularjs/angularjs-http-post-method-http-post-with-parameters-example
+    //Call the services
+    //$http.post('/api/name', JSON.stringify(data))
+    $http.get('/api/name')
+    .then(function (response) {
+        if (response.data)
+            console.log(response.data);
+    }, function (response) {
+        console.log("Service not Exists" + response.status + response.statusText);
+    });
+    */
+
     if (commonData.Name != '')
         $location.path('/fabric');
     

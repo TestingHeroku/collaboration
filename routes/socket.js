@@ -51,6 +51,10 @@ module.exports = function (io) {
             socket.broadcast.emit('addShape', value);
         });
 
+        socket.on('addMark', function (value) {
+            socket.broadcast.emit('addMark', value);
+        });
+
         socket.on('setUser', function (value) {
             var user = getUserById(socket.id);
             if (typeof user !== 'undefined')
