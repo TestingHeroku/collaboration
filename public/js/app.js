@@ -15,7 +15,7 @@ angular.module('fabricApp', [
         templateUrl: 'partials/profile',
         controller: 'ProfileCtrl'
     })
-    .when('/fabric', {
+    .when('/workspace', {
         templateUrl: 'partials/home',
         controller: 'HomeCtrl'
     })

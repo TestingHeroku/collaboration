@@ -74,5 +74,9 @@ module.exports = function (io) {
         socket.on('objectPathAdded', function(value) {
             socket.broadcast.emit('objectPathAdded', value);
         });
+
+        socket.on('changeMarkX', function(value) {
+            socket.broadcast.emit('changeMarkX', value);
+        });
     });
 };

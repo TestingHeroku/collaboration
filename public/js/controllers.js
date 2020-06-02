@@ -138,8 +138,8 @@ angular.module('fabricApp.controllers', [])
             homeCtrl.addNewMark('triangle');
         });
 
-        $('#create-line').on('click', function() {
-            homeCtrl.addNewMark('line');
+        $('#create-hexagon').on('click', function() {
+            homeCtrl.addNewMark('hexagon');
         });
 
         $('#delete-triangle-line').on('click', function() {
@@ -154,6 +154,12 @@ angular.module('fabricApp.controllers', [])
             if (event.keyCode == 8 || event.keyCode == 46) {
                 event.preventDefault();
                 homeCtrl.deleteObj();
+            } else if (event.keyCode == 88 || event.keyCode == 120) {
+                event.preventDefault();
+                homeCtrl.markX(true);
+            } else if (event.keyCode == 90 || event.keyCode == 122) {
+                event.preventDefault();
+                homeCtrl.markX(false);
             }
         });
 
@@ -214,6 +220,7 @@ angular.module('fabricApp.controllers', [])
         socketFactory.on('objectPathRemoved', homeCtrl.onObjectPathRemoved);
         socketFactory.on('objectGroupRemoved', homeCtrl.onObjectGroupRemoved);
         socketFactory.on('objectPathAdded', homeCtrl.onObjectPathAdded);
+        socketFactory.on('changeMarkX', homeCtrl.onChangeMarkX);
     };
 
     homeCtrl.setUsers = function(value) {
@@ -271,12 +278,13 @@ angular.module('fabricApp.controllers', [])
 
         left = ((event.clientX - $(homeCtrl.container).offset().left) - 25) / $scope.canvas.getZoom();
         top = (event.pageY - $(homeCtrl.container).offset().top) / $scope.canvas.getZoom();
+        top = top < 0 ? 10 : top;
         id = homeCtrl.getHighestId() + 1;
         homeCtrl.createShape(left, top, id, shape);
 
         socketFactory.emit('addShape', {
             left: left,
-            top: +top,
+            top: top,
             id: id,
             shape: shape
         });
@@ -285,50 +293,50 @@ angular.module('fabricApp.controllers', [])
     homeCtrl.createShape = function(left, top, id, shape) {
         switch(shape) {
             case 'smRectangle':
-                var stringId = ''+id;
                 var stringPath = 'M0,0 l0,30 l30,0 l0,-30 l-12,0 l-3,10 l-3,-10 z';
                 var backColor = '#0000FF';
                 var sizeFont = 20;
+                var cross = 30;
                 break;
             case 'mdRectangle':
-                var stringId = ''+id;
                 var stringPath = 'M0,0 l0,40 l40,0 l0,-40 l-16,0 l-4,10 l-4,-10 z';
                 var backColor = '#0000FF';
                 var sizeFont = 25;
+                var cross = 40;
                 break;
             case 'lgRectangle':
-                var stringId = ''+id;
                 var stringPath = 'M0,0 l0,50 l50,0 l0,-50 l-20,0 l-5,10 l-5,-10 z';
                 var backColor = '#0000FF';
                 var sizeFont = 30;
+                var cross = 50;
                 break;
             case 'smCircle':
-                var stringPath = 'M15,2 a15,15 0 1,0 10,0 l-5,5 z';
+                var stringPath = 'M10,0 a15,15 0 1,0 10,0 l-5,5 z';
                 var backColor = '#FF0000';
                 var sizeFont = 15;
-                var stringId = '  '+id;
+                var cross = 20;
                 break;
             case 'mdCircle':
-                var stringId = '  '+id;
-                var stringPath = 'M20,2 a20,20 0 1,0 10,0 l-5,8 z';
+                var stringPath = 'M15,0 a20,20 0 1,0 10,0 l-5,8 z';
                 var backColor = '#FF0000';
                 var sizeFont = 20;
+                var cross = 25;
                 break;
             case 'lgCircle':
-                var stringId = '  '+id;
-                var stringPath = 'M25,2 a25,25 0 1,0 10,0 l-5,10 z';
+                var stringPath = 'M20,0 a25,25 0 1,0 10,0 l-5,10 z';
                 var backColor = '#FF0000';
                 var sizeFont = 20;
+                var cross = 30;
                 break;
         }
         
-        var group = homeCtrl.getShape(left, top, id, stringId, stringPath, backColor, sizeFont);
+        var group = homeCtrl.getShape(left, top, id, stringPath, backColor, sizeFont, cross);
         $scope.objList.push(group);
         $scope.canvas.add(group);
         $scope.canvas.renderAll();
     };
 
-    homeCtrl.getShape = function(left, top, id, stringId, stringPath, backColor, sizeFont) {
+    homeCtrl.getShape = function(left, top, id, stringPath, backColor, sizeFont, cross) {
         var path = new fabric.Path(stringPath);
         path.set({
             fill: backColor,
@@ -336,15 +344,31 @@ angular.module('fabricApp.controllers', [])
             originY: 'center'
         });
 
-        var text = new fabric.Text(stringId, {
+        var text = new fabric.Text(''+id, {
             fontSize: sizeFont,
             originX: 'center',
             originY: 'center'
         });
 
-        var group = new fabric.Group([ path, text ], {
+        var line1 = new fabric.Line([0,0,cross,cross], {
+            left: 0,
+            top: 0,
+            stroke: 0,
+            originX: 'center',
+            originY: 'center'
+        });
+
+        var line2 = new fabric.Line([cross,0,0,cross], {
+            left: 0,
+            top: 0,
+            stroke: 0,
+            originX: 'center',
+            originY: 'center'
+        });
+
+        var group = new fabric.Group([ path, text, line1, line2 ], {
             left: left,
-            top: +top,
+            top: top,
             lockScalingX: true,
             lockScalingY: true,
             originX: 'center',
@@ -379,7 +403,7 @@ angular.module('fabricApp.controllers', [])
 
         socketFactory.emit('addMark', {
             left: left,
-            top: +top,
+            top: top,
             id: id,
             shape: shape
         });
@@ -398,11 +422,24 @@ angular.module('fabricApp.controllers', [])
                     id: id
                 });
                 break;
-            case 'line':
-                var mark = new fabric.Line([0, 0, 50, 50], {
+            case 'hexagon':
+                var points = [
+                    { x: 20, y: 0 },
+                    { x: 0, y: 20 },
+                    { x: 0, y: 40 },
+                    { x: 20, y: 60 },
+                    { x: 40, y: 60 },
+                    { x: 60, y: 40 },
+                    { x: 60, y: 20 },
+                    { x: 40, y: 0 },
+                    { x: 20, y: 0 }
+                ]
+                var mark = new fabric.Polygon(points, {
                     left: left,
                     top: top,
-                    stroke: 'black',
+                    fill: 'black',
+                    originX: 'center',
+                    originY: 'center',
                     id: id
                 });
                 break;
@@ -451,6 +488,31 @@ angular.module('fabricApp.controllers', [])
             }
         }
     };
+
+    homeCtrl.markX = function(show) {
+        var activeObject = $scope.canvas.getActiveObject();
+        if (activeObject !== undefined && activeObject !== null) {
+            if (activeObject.type == 'group') {
+                var value = {
+                    id: activeObject.id,
+                    show: show
+                }
+                homeCtrl.onChangeMarkX(value);
+                socketFactory.emit('changeMarkX', value);
+            }
+        }
+    };
+
+    homeCtrl.onChangeMarkX = function(value) {
+        var object = homeCtrl.getObjectById(value.id);
+        object.item(2).set({
+            stroke: value.show ? 1 : 0
+        });
+        object.item(3).set({
+            stroke: value.show ? 1 : 0
+        });
+        $scope.canvas.renderAll();
+    }
 
     /**
      * Tell all clients we deleted an object
@@ -681,10 +743,10 @@ angular.module('fabricApp.controllers', [])
     */
 
     if (commonData.Name != '')
-        $location.path('/fabric');
+        $location.path('/workspace');
     
     $scope.submitName = function() {
         commonData.Name = $scope.user.name;
-        $location.path('/fabric');
+        $location.path('/workspace');
     };
 });
