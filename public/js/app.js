@@ -19,6 +19,10 @@ angular.module('fabricApp', [
         templateUrl: 'partials/home',
         controller: 'HomeCtrl'
     })
+    .when('/admin', {
+        templateUrl: 'partials/admin',
+        controller: 'AdminCtrl'
+    })
     .otherwise({
         redirectTo: '/'
     });

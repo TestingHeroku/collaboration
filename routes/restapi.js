@@ -4,55 +4,38 @@
 
 module.exports = function (app) {
 
-    var self = this;
     var app = app;
+    var sessionId = '';
 
-    exports.getObjects = function(req, res) {
-        res.json({
-            obj0:
-            {
-                type: 'rectangle',
-                color: '#00FF00',
-                left: 0,
-                top: 0,
-                id: 0
-            },
-            obj1:
-            {
-                type: 'circle',
-                color: '#00FF00',
-                left: 200,
-                top: 0,
-                id: 1
-            },
-            obj2:
-            {
-                type: 'triangle',
-                color: '#00FF00',
-                left: 300,
-                top: 0,
-                id: 2
-            },
-            obj3 :
-            {
-                type: 'image',
-                url: 'images/icons/user.png',
-                left: 460,
-                top: 120,
-                id: 3
-            },
-            obj4 :
-            {
-                type: 'text',
-                text: 'Responsive Object',
-                left: 200,
-                top: 250,
-                id: 4
-            }
-        });
+    exports.checkAdminCode = function(req, res){
+        if (req.query.code == '0swald0') {
+            const first = Math.floor((Math.random() * 1000));
+            const second = Math.floor((Math.random() * 1000));
+            sessionId = first + '-' + second;
+            res.json({
+                validation: true,
+                sessionId: sessionId
+            });
+        } else {
+            res.json({
+                validation: false,
+                sessionId: ''
+            });
+        }
     };
 
+    exports.checkClientCode = function(req, res) {
+        if (req.query.code == sessionId) {
+            sessionId = '';
+            res.json({
+                validation: true
+            });
+        } else {
+            res.json({
+                validation: false
+            });
+        }
+    };
 
     return exports;
-
 };

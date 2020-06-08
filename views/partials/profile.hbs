@@ -1,14 +1,41 @@
-<div class="container" ng-cloak>
-    <div class="row">
-        <div class="col-md-5"></div>
-        <div id="meeting-id" class="col-md-2 text-center">
-            <form ng-submit="submitName();">
-                <div class="form-group">
-                    <input type="text" class="form-control" id="name" ng-model="user.name" placeholder="Tú Nombre">
-                </div>
-                <button type="submit" ng-disabled="!user.name" class="btn btn-primary btn-lg">Iniciar</button>
-            </form>
+<!--https://startbootstrap.com/themes/coming-soon/-->
+
+<div class="overlay"></div>
+<img src="images/bkg.jpg">
+<div class="masthead" ng-cloak>
+  <div class="masthead-bg"></div>
+  <div class="container h-100">
+    <div class="row h-100">
+      <div class="col-12 my-auto">
+        <div class="masthead-content text-white py-5 py-md-0">
+          <h1 class="mb-3">Constelaciones</h1>
+          <p class="mb-5"></p>
+          <form ng-submit="submitClientData();">
+            <div class="form-group input-group-newsletter">
+              <input type="text" class="form-control" id="name" ng-model="user.name" placeholder="Ingresa tu Nombre">
+              <input type="text" class="form-control" id="code" ng-model="user.code" placeholder="Ingresa el Código">
+              <div class="input-group-append">
+                <button type="submit" ng-disabled="!user.name || !user.code" class="btn btn-primary btn-lg">Ingresar</button>
+              </div>
+            </div>
+          </form>
         </div>
-        <div class="col-md-5"></div>
+      </div>
     </div>
+  </div>
+</div>
+
+<div class="social-icons">
+  <ul class="list-unstyled text-center mb-0">
+    <li class="list-unstyled-item">
+      <a href="https://www.facebook.com/oswaldo.chavez.315" target="_blank" rel="noopener noreferrer">
+        <i class="fa fa-facebook-f"></i>
+      </a>
+    </li>
+    <li class="list-unstyled-item">
+      <a href="https://www.instagram.com/oswaldochavezrusinque/" target="_blank" rel="noopener noreferrer">
+        <i class="fa fa-instagram"></i>
+      </a>
+    </li>
+  </ul>
 </div>

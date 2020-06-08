@@ -112,9 +112,12 @@ angular.module('fabricApp.controllers', [])
         $scope.canvas.freeDrawingBrush.width = 2;
         homeCtrl.container = $('#canvas-container');
 
+        $scope.session = commonData.Session;
+        
         // TODO: Change this condition
-        if (commonData.Name != 'administrador')
+        if (commonData.Name != 'Coachavez') {
             $('#admin-tools').hide();
+        }
 
         $('#drawing-mode').on('click', function() {
             $scope.canvas.isDrawingMode = !$scope.canvas.isDrawingMode;
@@ -722,31 +725,42 @@ angular.module('fabricApp.controllers', [])
  * Basic Profile Controller
  */
 .controller('ProfileCtrl', function($scope, $location, $http, commonData) {
-
-    /*
-    var data = {
-        name: 'Pepe',
-        age: 10,      
-        adress: 'Apotz'
+    $scope.submitClientData = function() {
+        $http.get('/api/checkClientCode', {
+            params: {code: $scope.user.code}
+        })
+        .then(function (response) {
+            if (response.data) {
+                if (response.data.validation == true) {
+                    commonData.Name = $scope.user.name;
+                    $location.path('/workspace');
+                }
+            }
+        }, function (response) {
+            //console.log("Service not Exists" + response.status + response.statusText);
+        });
     };
-    
-    // https://www.tutlane.com/tutorial/angularjs/angularjs-http-post-method-http-post-with-parameters-example
-    //Call the services
-    //$http.post('/api/name', JSON.stringify(data))
-    $http.get('/api/name')
-    .then(function (response) {
-        if (response.data)
-            console.log(response.data);
-    }, function (response) {
-        console.log("Service not Exists" + response.status + response.statusText);
-    });
-    */
+})
 
-    if (commonData.Name != '')
-        $location.path('/workspace');
-    
-    $scope.submitName = function() {
-        commonData.Name = $scope.user.name;
-        $location.path('/workspace');
+/**
+ * Admin Controller
+ */
+.controller('AdminCtrl', function($scope, $location, $http, commonData) {
+
+    $scope.submitAdminCode = function() {
+        $http.get('/api/checkAdminCode', {
+            params: {code: $scope.admin.code}
+        })
+        .then(function (response) {
+            if (response.data) {
+                if (response.data.validation == true) {
+                    commonData.Session = response.data.sessionId;
+                    commonData.Name = 'Coachavez';
+                    $location.path('/workspace');
+                }
+            }
+        }, function (response) {
+            //console.log("Service not Exists" + response.status + response.statusText);
+        });
     };
 });

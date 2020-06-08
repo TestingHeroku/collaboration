@@ -4,15 +4,15 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'development';
  * Module dependencies
  */
 
-var express = require('express'),
-    morgan = require('morgan'),
-    bodyParser = require('body-parser'),
-    methodOverride = require('method-override'),
-    serveStatic = require('serve-static'),
-    errorhandler = require('errorhandler'),
-    exphbs  = require('express-handlebars'),
-    http = require('http'),
-    path = require('path');
+var express = require('express');
+var morgan = require('morgan');
+var bodyParser = require('body-parser');
+var methodOverride = require('method-override');
+var serveStatic = require('serve-static');
+var errorhandler = require('errorhandler');
+var exphbs  = require('express-handlebars');
+var http = require('http');
+var path = require('path');
 
 //custom modules
 var routes = require('./routes');
@@ -66,7 +66,8 @@ app.get('/', routes.index);
 app.get('/partials/:name', routes.partials);
 
 // JSON API
-app.get('/api/name', restApi.getObjects);
+app.get('/api/checkAdminCode', restApi.checkAdminCode);
+app.get('/api/checkClientCode', restApi.checkClientCode);
 
 // redirect all others to the index (HTML5 history)
 app.get('*', routes.index);

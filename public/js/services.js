@@ -34,6 +34,7 @@ angular.module('fabricApp.services', [])
     
     var commonData = {};
     commonData.Name = '';
+    commonData.Session = '';
     
     return commonData;
 });
