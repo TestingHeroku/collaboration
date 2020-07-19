@@ -94,6 +94,8 @@ angular.module('fabricApp.controllers', [])
         $scope.canvas.setZoom(1);
         $scope.canvas.calcOffset();
         $scope.canvas.renderAll();
+
+        homeCtrl.addAreas();
     }
     
     /**
@@ -172,37 +174,6 @@ angular.module('fabricApp.controllers', [])
         // Init objList
         $scope.objList = [];
         
-        // Add areas to the canvas
-        var pointsLateralArea = [
-            {x:0, y:0},
-            {x:$scope.canvas.width * 0.1, y:0},
-            {x:$scope.canvas.width * 0.1, y:$scope.canvas.height},
-            {x:0, y:$scope.canvas.height}
-        ];
-        var lateralArea = new fabric.Polygon(pointsLateralArea, { 
-            stroke: 'gray',
-            strokeWidth: 1,
-            strokeDashArray: [1,3],
-            fill: '#000',
-            selectable: false
-        });
-        $scope.canvas.add(lateralArea);
-
-        var pointsCentralArea = [
-            {x:$scope.canvas.width * 0.28, y:$scope.canvas.height * 0.28},
-            {x:$scope.canvas.width * 0.82, y:$scope.canvas.height * 0.28},
-            {x:$scope.canvas.width * 0.82, y:$scope.canvas.height * 0.82},
-            {x:$scope.canvas.width * 0.28, y:$scope.canvas.height * 0.82}
-        ];
-        var centralArea = new fabric.Polygon(pointsCentralArea, { 
-            stroke: 'gray',
-            strokeWidth: 1,
-            strokeDashArray: [1,1],
-            fill: 'transparent',
-            selectable: false
-        });
-        $scope.canvas.add(centralArea);
-
         homeCtrl.initDrag();
 
         // Register canvas events
@@ -225,6 +196,48 @@ angular.module('fabricApp.controllers', [])
         socketFactory.on('objectPathAdded', homeCtrl.onObjectPathAdded);
         socketFactory.on('changeMarkX', homeCtrl.onChangeMarkX);
     };
+
+    homeCtrl.addAreas = function() {
+        var objects = $scope.canvas.getObjects();
+        for (var i = 0; i < objects.length; i++) {
+            if (objects[i].id == -1) {
+                $scope.canvas.remove(objects[i]);
+            }
+        }
+
+        // Add areas to the canvas
+        var pointsLateralArea = [
+            {x:0, y:0},
+            {x:$scope.canvas.width * 0.1, y:0},
+            {x:$scope.canvas.width * 0.1, y:$scope.canvas.height},
+            {x:0, y:$scope.canvas.height}
+        ];
+        var lateralArea = new fabric.Polygon(pointsLateralArea, { 
+            stroke: 'gray',
+            strokeWidth: 1,
+            strokeDashArray: [1,3],
+            fill: '#000',
+            selectable: false,
+            id: -1
+        });
+        $scope.canvas.add(lateralArea);
+
+        var pointsCentralArea = [
+            {x:$scope.canvas.width * 0.28, y:$scope.canvas.height * 0.28},
+            {x:$scope.canvas.width * 0.82, y:$scope.canvas.height * 0.28},
+            {x:$scope.canvas.width * 0.82, y:$scope.canvas.height * 0.82},
+            {x:$scope.canvas.width * 0.28, y:$scope.canvas.height * 0.82}
+        ];
+        var centralArea = new fabric.Polygon(pointsCentralArea, { 
+            stroke: 'gray',
+            strokeWidth: 1,
+            strokeDashArray: [1,1],
+            fill: 'transparent',
+            selectable: false,
+            id: -1
+        });
+        $scope.canvas.add(centralArea);
+    }
 
     homeCtrl.setUsers = function(value) {
         $scope.users = value;
