@@ -87,16 +87,17 @@ angular.module('fabricApp.controllers', [])
      */
     homeCtrl.resizeCanvas = function (){
         $scope.canvas.setDimensions({
-            width: $(homeCtrl.container).width(),
-            height: $(window).innerHeight() - 80
+            width: 1200, //$(homeCtrl.container).width(),
+            height: 500 //$(window).innerHeight() - 80
         });
-
+        
+        var margin = ($(window).innerWidth() - 1200) * 0.5;
+        $('#canvas-container').css( {'margin-left' : margin +'px' } );
+        
         $scope.canvas.setZoom(1);
         $scope.canvas.calcOffset();
         $scope.canvas.renderAll();
-
-        homeCtrl.addAreas();
-    }
+    };
     
     /**
      * Init Function
@@ -106,7 +107,7 @@ angular.module('fabricApp.controllers', [])
     homeCtrl.init = function() {
         // Create a wrapper around native canvas element (with id="fabricjs")
         $scope.canvas = new fabric.Canvas('fabricjs');
-        $scope.canvas.backgroundColor = '#C0C0C0';
+        $scope.canvas.backgroundColor = '#C2FFC5';
         $scope.canvas.isDrawingMode = false;
         $scope.canvas.hoverCursor = 'arrow';
         $scope.canvas.selection = false;
@@ -171,6 +172,8 @@ angular.module('fabricApp.controllers', [])
         // Resize canvas on first load
         homeCtrl.resizeCanvas();
 
+        homeCtrl.addAreas();
+
         // Init objList
         $scope.objList = [];
         
@@ -205,12 +208,15 @@ angular.module('fabricApp.controllers', [])
             }
         }
 
+        var w = $scope.canvas.width;
+        var h = $scope.canvas.height;
+
         // Add areas to the canvas
         var pointsLateralArea = [
             {x:0, y:0},
-            {x:$scope.canvas.width * 0.1, y:0},
-            {x:$scope.canvas.width * 0.1, y:$scope.canvas.height},
-            {x:0, y:$scope.canvas.height}
+            {x:w * 0.1, y:0},
+            {x:w * 0.1, y:h},
+            {x:0, y:h}
         ];
         var lateralArea = new fabric.Polygon(pointsLateralArea, { 
             stroke: 'gray',
@@ -222,7 +228,35 @@ angular.module('fabricApp.controllers', [])
         });
         $scope.canvas.add(lateralArea);
 
-        var pointsCentralArea = [
+        var grid = new fabric.Polyline([
+            { x: w * 0.1 , y: h * 0.2 },
+            { x: w       , y: h * 0.2 },
+            { x: w       , y: h * 0.4 },
+            { x: w * 0.1 , y: h * 0.4 },
+            { x: w * 0.1 , y: h * 0.6 },
+            { x: w       , y: h * 0.6 },
+            { x: w       , y: h * 0.8 },
+            { x: w * 0.1 , y: h * 0.8 },
+            { x: w * 0.1 , y: h },
+            { x: w * 0.28, y: h },
+            { x: w * 0.28, y: 0 },
+            { x: w * 0.46, y: 0 },
+            { x: w * 0.46, y: h },
+            { x: w * 0.64, y: h },
+            { x: w * 0.64, y: 0 },
+            { x: w * 0.82, y: 0 },
+            { x: w * 0.82, y: h }
+        ], {
+            stroke: 'gray',
+            strokeWidth: 1,
+            strokeDashArray: [1,1],
+            fill: 'transparent',
+            selectable: false,
+            id: -1
+        });
+        $scope.canvas.add(grid);
+
+        /*var pointsCentralArea = [
             {x:$scope.canvas.width * 0.28, y:$scope.canvas.height * 0.28},
             {x:$scope.canvas.width * 0.82, y:$scope.canvas.height * 0.28},
             {x:$scope.canvas.width * 0.82, y:$scope.canvas.height * 0.82},
@@ -236,7 +270,7 @@ angular.module('fabricApp.controllers', [])
             selectable: false,
             id: -1
         });
-        $scope.canvas.add(centralArea);
+        $scope.canvas.add(centralArea);*/
     }
 
     homeCtrl.setUsers = function(value) {
