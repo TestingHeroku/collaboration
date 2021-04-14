@@ -11,7 +11,7 @@ angular.module('fabricApp', [
 ])
 .config(function ($routeProvider, $locationProvider) {
     $routeProvider
-    .when('/', {
+    .when('/constelaciones', {
         templateUrl: 'partials/profile',
         controller: 'ProfileCtrl'
     })

@@ -62,7 +62,8 @@ if (app.get('env') === 'production') {
  */
 
 // serve index and view partials
-app.get('/', routes.index);
+app.get('/', express.static('index.html'))
+app.get('/constelaciones', routes.index);
 app.get('/partials/:name', routes.partials);
 
 // JSON API
